@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th = "http://www.thymeleaf.org/">
+<head th:replace="fragments :: head"></head>
+<body>
+<div class="container">
+    <br>  <p class="text-center">Si no quieres registrarte, <a href="/home"> ir a la página</a></p>
+    <hr>
+
+
+
+
+
+    <div class="card bg-light">
+        <article class="card-body mx-auto" style="max-width: 400px;">
+            <h4 class="card-title mt-3 text-center">Crear una nueva cuenta</h4>
+
+            <div><br>
+                <div class="row">
+
+                    <div class="col-12 shadow-lg p-3 mb-5 bg-white rounded"><br>
+                        <h2>Crear nuevo usuario</h2> <br>
+                        <form th:action="@{/api/usuario/registrar}" th:object="${usuario}" method="post"
+                              class="text-center justify-content-center">
+                            <div class="input-group mb-3 justify-content-center">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">
+                                        <span><i class="fa fa-keyboard"></i></span>
+                                    </div>
+                                </div>
+                                <input type="text" placeholder="Nombre de usuario" th:field="*{username}" minlength="5">
+                            </div>
+                            <hr>
+                            <div class="col">
+                                <!-- checkbox que nos permite activar o desactivar la opcion -->
+                                <div style="margin-top:10px;">
+                                    <input type="checkbox" id="mostrar_contrasena" title="clic para mostrar contraseña"/>
+                                    &nbsp;&nbsp;Mostrar Contraseña
+                                </div>
+                            </div>
+                            <div class="input-group mb-3 justify-content-center">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">
+                                        <span><i class="fa fa-key"></i></span>
+                                    </div>
+                                </div>
+                                <input type="password" placeholder="Contraseña" th:field="*{password}" minlength="8"
+                                       id="password" required>
+                            </div>
+                            <div class="input-group mb-3 justify-content-center">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">
+                                        <span><i class="fa fa-key"></i></span>
+                                    </div>
+                                </div>
+                                <input type="password" placeholder="Confirmar Contraseña" id="confirm_password" required>
+                            </div>
+                            <br>
+                            <button type="submit" class="btn btn-success">Registrarse en el sistema</button>
+                        </form>
+                        <br>
+                    </div>
+
+                </div>
+                <br><br><br><br><br><br><br>
+            </div>
+        </article>
+    </div> <!-- card.// -->
+
+</div>
+<!--container end.//-->
+
+<br><br>
+<!-- Footer -->
+<footer th:replace="fragments :: footer"></footer>
+</body>
+<script>
+    var password = document.getElementById("password")
+  , confirm_password = document.getElementById("confirm_password");
+
+function validatePassword(){
+  if(password.value != confirm_password.value) {
+    confirm_password.setCustomValidity("Las contraseñas no coinciden");
+  } else {
+    confirm_password.setCustomValidity('');
+  }
+}
+
+password.onchange = validatePassword;
+confirm_password.onkeyup = validatePassword;
+
+
+
+</script>
+<script>
+    $(document).ready(function () {
+      $('#mostrar_contrasena').click(function () {
+        if ($('#mostrar_contrasena').is(':checked')) {
+          $('#password').attr('type', 'text');
+          $('#confirm_password').attr('type', 'text');
+        } else {
+          $('#password').attr('type', 'password');
+          $('#confirm_password').attr('type', 'password');
+        }
+      });
+    });
+
+
+
+</script>
+
+</html>
