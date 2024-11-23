@@ -24,26 +24,23 @@ public class ProductoController {
 
     private static final String UPLOAD_DIR = "src/main/resources/static/images/";
 
-    // Mostrar formulario para crear producto
     @GetMapping("/new")
     public String newProductoForm(Model model) {
         model.addAttribute("producto", new Producto());
         return "crear-producto";
     }
 
-    // Guardar producto
     @PostMapping("/save")
     public String saveProducto(@ModelAttribute Producto producto, @RequestParam("imagen") MultipartFile imagenFile, RedirectAttributes attributes) {
         if (!imagenFile.isEmpty()) {
             String imagePath = saveImage(imagenFile);
-            producto.setImagenUrl(imagePath); // Asignar URL de la imagen al producto
+            producto.setImagenUrl(imagePath);
         }
         productoRepository.save(producto);
         attributes.addFlashAttribute("mensaje", "Producto guardado con éxito");
         return "redirect:/producto/productos";
     }
 
-    // Mostrar formulario de edición
     @GetMapping("/edit/form/{id}")
     public String editProductoForm(@PathVariable Integer id, Model model) {
         Producto producto = productoRepository.findById(id).orElse(null);
@@ -51,7 +48,6 @@ public class ProductoController {
         return "editar-producto";
     }
 
-    // Guardar cambios en producto editado
     @PostMapping("/edit/{id}")
     public String updateProducto(@PathVariable Integer id, @ModelAttribute Producto producto, @RequestParam(value = "imagen", required = false) MultipartFile imagenFile, RedirectAttributes attributes) {
         Producto existingProducto = productoRepository.findById(id).orElse(null);
@@ -68,14 +64,12 @@ public class ProductoController {
         return "redirect:/producto/productos";
     }
 
-    // Mostrar lista de productos
     @GetMapping("/productos")
     public String listProductos(Model model) {
         model.addAttribute("productos", productoRepository.findAll());
         return "productos";
     }
 
-    // Guardar imagen
     private String saveImage(MultipartFile file) {
         if (file.isEmpty()) {
             System.out.println("El archivo está vacío.");
@@ -84,19 +78,19 @@ public class ProductoController {
         try {
             Path uploadPath = Paths.get(UPLOAD_DIR).toAbsolutePath();
             if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath); // Crear carpeta si no existe
+                Files.createDirectories(uploadPath);
             }
             Path filePath = uploadPath.resolve(file.getOriginalFilename());
             if (!Files.exists(filePath)) {
                 Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
                 System.out.println("Imagen guardada en: " + filePath.toString());
-                return "/images/" + file.getOriginalFilename(); // Ajuste en la ruta para acceso desde el navegador
+                return "/images/" + file.getOriginalFilename();
             } else {
                 String newFileName = System.currentTimeMillis() + "-" + file.getOriginalFilename();
                 Path newFilePath = uploadPath.resolve(newFileName);
                 Files.copy(file.getInputStream(), newFilePath, StandardCopyOption.REPLACE_EXISTING);
                 System.out.println("Imagen guardada en: " + newFilePath.toString());
-                return "/images/" + newFileName; // Ajuste en la ruta para acceso desde el navegador
+                return "/images/" + newFileName;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -104,7 +98,6 @@ public class ProductoController {
         }
     }
 
-    // Eliminar producto
     @GetMapping("/delete/{id}")
     public String deleteProducto(@PathVariable Integer id, RedirectAttributes attributes) {
         productoRepository.deleteById(id);
