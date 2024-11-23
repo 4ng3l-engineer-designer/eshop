@@ -32,14 +32,25 @@ public class ProductoController {
 
     @PostMapping("/save")
     public String saveProducto(@ModelAttribute Producto producto, @RequestParam("imagen") MultipartFile imagenFile, RedirectAttributes attributes) {
-        if (!imagenFile.isEmpty()) {
-            String imagePath = saveImage(imagenFile);
-            producto.setImagenUrl(imagePath);
+        try {
+            if (!imagenFile.isEmpty()) {
+                String imagePath = saveImage(imagenFile);
+                if (imagePath == null) {
+                    throw new IOException("Error al guardar la imagen");
+                }
+                producto.setImagenUrl(imagePath);
+            }
+            productoRepository.save(producto);
+            attributes.addFlashAttribute("mensaje", "Producto guardado con éxito");
+        } catch (Exception e) {
+            System.out.println("Error al guardar el producto: " + e.getMessage());
+            attributes.addFlashAttribute("error", "Error al guardar el producto: " + e.getMessage());
+            return "redirect:/producto/new"; // Redirige de nuevo al formulario si hay error
         }
-        productoRepository.save(producto);
-        attributes.addFlashAttribute("mensaje", "Producto guardado con éxito");
-        return "redirect:/producto/productos";
+        return "redirect:/admin/productos"; // Aquí es donde necesitas cambiar la redirección
     }
+
+
 
     @GetMapping("/edit/form/{id}")
     public String editProductoForm(@PathVariable Integer id, Model model) {
@@ -67,7 +78,7 @@ public class ProductoController {
     @GetMapping("/productos")
     public String listProductos(Model model) {
         model.addAttribute("productos", productoRepository.findAll());
-        return "productos";
+        return "producto";
     }
 
     private String saveImage(MultipartFile file) {
