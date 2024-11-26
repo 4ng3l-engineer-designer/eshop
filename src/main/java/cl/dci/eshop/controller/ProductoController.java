@@ -108,17 +108,16 @@ public class ProductoController {
                 System.out.println("Imagen guardada en: " + filePath.toString());
                 return "/images/" + file.getOriginalFilename();
             } else {
-                String newFileName = System.currentTimeMillis() + "-" + file.getOriginalFilename();
-                Path newFilePath = uploadPath.resolve(newFileName);
-                Files.copy(file.getInputStream(), newFilePath, StandardCopyOption.REPLACE_EXISTING);
-                System.out.println("Imagen guardada en: " + newFilePath.toString());
-                return "/images/" + newFileName;
+                // Si el archivo ya existe, reutilizar el nombre de archivo existente en lugar de crear uno nuevo.
+                System.out.println("Imagen ya existente, reutilizando archivo: " + filePath.toString());
+                return "/images/" + file.getOriginalFilename();
             }
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
     }
+
 
     @PostMapping("/delete/{id}")
     public String deleteProducto(@PathVariable Integer id, RedirectAttributes attributes) {
