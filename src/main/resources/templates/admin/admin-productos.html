@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org/">
+<html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments :: head"></head>
 <body>
 <!-- Navigation -->
@@ -45,13 +45,11 @@
                                     <img th:src="${producto.imagenUrl}" alt="Producto" width="80">
                                 </td>
                                 <td>
+                                    <a th:href="@{/producto/edit/form/{id}(id=${producto.id})}" class="btn btn-warning">
+                                        <i class="fa fa-edit"></i>
+                                    </a>
                                     <form th:action="@{/producto/delete/{id}(id=${producto.id})}" method="post"
                                           onsubmit="return confirm('¿Estás seguro que quieres borrar este producto?');">
-                                        <a th:href="@{/producto/edit/form/{id}(id=${producto.id})}">
-                                            <button type="button" class="btn btn-warning">
-                                                <i class="fa fa-edit"></i>
-                                            </button>
-                                        </a>
                                         <button type="submit" class="btn btn-danger">
                                             <i class="fa fa-trash-alt"></i>
                                         </button>

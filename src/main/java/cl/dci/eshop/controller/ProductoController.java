@@ -3,6 +3,7 @@ package cl.dci.eshop.controller;
 import cl.dci.eshop.model.Producto;
 import cl.dci.eshop.repository.ProductoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 @Controller
-@RequestMapping("/producto") // Base URL para todos los handlers
+@RequestMapping("/producto")
 public class ProductoController {
 
     @Autowired
@@ -54,8 +55,12 @@ public class ProductoController {
     @GetMapping("/edit/form/{id}")
     public String editProductoForm(@PathVariable Integer id, Model model) {
         Producto producto = productoRepository.findById(id).orElse(null);
-        model.addAttribute("producto", producto);
-        return "admin/producto-update";  // Asegúrate de que esta ruta es correcta y coincide con el nombre del archivo HTML en tu proyecto
+        if (producto != null) {
+            model.addAttribute("producto", producto);
+            return "admin/producto-update";
+        } else {
+            return "redirect:/producto/productos";
+        }
     }
 
     @PostMapping("/edit/{id}")
@@ -113,14 +118,20 @@ public class ProductoController {
         }
     }
 
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public String deleteProducto(@PathVariable Integer id, RedirectAttributes attributes) {
-        if (productoRepository.existsById(id)) {
-            productoRepository.deleteById(id);
-            attributes.addFlashAttribute("mensaje", "Producto eliminado con éxito");
-        } else {
-            attributes.addFlashAttribute("error", "Error: Producto no encontrado");
+        try {
+            if (productoRepository.existsById(id)) {
+                productoRepository.deleteById(id);
+                attributes.addFlashAttribute("mensaje", "Producto eliminado con éxito");
+            } else {
+                attributes.addFlashAttribute("error", "Error: Producto no encontrado");
+            }
+        } catch (Exception e) {
+            attributes.addFlashAttribute("error", "Error al eliminar el producto: " + e.getMessage());
+            e.printStackTrace();  // Esto imprimirá el stack trace en el log del servidor
         }
-        return "redirect:/producto/productos";
+        return "redirect:/admin/productos";
     }
+
 }
