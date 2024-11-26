@@ -36,27 +36,26 @@ public class ProductoController {
             if (!imagenFile.isEmpty()) {
                 String imagePath = saveImage(imagenFile);
                 if (imagePath == null) {
-                    throw new IOException("Error al guardar la imagen");
+                    attributes.addFlashAttribute("error", "Error al guardar la imagen");
+                    return "redirect:/producto/new";
                 }
                 producto.setImagenUrl(imagePath);
             }
             productoRepository.save(producto);
             attributes.addFlashAttribute("mensaje", "Producto guardado con éxito");
         } catch (Exception e) {
-            System.out.println("Error al guardar el producto: " + e.getMessage());
             attributes.addFlashAttribute("error", "Error al guardar el producto: " + e.getMessage());
-            return "redirect:/producto/new"; // Redirige de nuevo al formulario si hay error
+            e.printStackTrace();  // Agrega esta línea para imprimir el stack trace en el log
+            return "redirect:/producto/new";
         }
-        return "redirect:/admin/productos"; // Aquí es donde necesitas cambiar la redirección
+        return "redirect:/admin/productos";
     }
-
-
 
     @GetMapping("/edit/form/{id}")
     public String editProductoForm(@PathVariable Integer id, Model model) {
         Producto producto = productoRepository.findById(id).orElse(null);
         model.addAttribute("producto", producto);
-        return "editar-producto";
+        return "admin/producto-update";  // Asegúrate de que esta ruta es correcta y coincide con el nombre del archivo HTML en tu proyecto
     }
 
     @PostMapping("/edit/{id}")
@@ -68,11 +67,16 @@ public class ProductoController {
             if (imagenFile != null && !imagenFile.isEmpty()) {
                 String imagePath = saveImage(imagenFile);
                 existingProducto.setImagenUrl(imagePath);
+            } else if (existingProducto.getImagenUrl() != null) {
+                producto.setImagenUrl(existingProducto.getImagenUrl());
             }
             productoRepository.save(existingProducto);
             attributes.addFlashAttribute("mensaje", "Producto actualizado con éxito");
+        } else {
+            attributes.addFlashAttribute("error", "Error: Producto no encontrado");
+            return "redirect:/producto/edit/form/{id}";
         }
-        return "redirect:/producto/productos";
+        return "redirect:/admin/productos";
     }
 
     @GetMapping("/productos")
@@ -111,8 +115,12 @@ public class ProductoController {
 
     @GetMapping("/delete/{id}")
     public String deleteProducto(@PathVariable Integer id, RedirectAttributes attributes) {
-        productoRepository.deleteById(id);
-        attributes.addFlashAttribute("mensaje", "Producto eliminado con éxito");
+        if (productoRepository.existsById(id)) {
+            productoRepository.deleteById(id);
+            attributes.addFlashAttribute("mensaje", "Producto eliminado con éxito");
+        } else {
+            attributes.addFlashAttribute("error", "Error: Producto no encontrado");
+        }
         return "redirect:/producto/productos";
     }
 }

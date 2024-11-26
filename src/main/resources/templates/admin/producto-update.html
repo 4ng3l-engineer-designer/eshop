@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org/">
-<head th:fragment="head">
+<head>
     <meta charset="UTF-8">
     <title>Editar producto</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,19 +17,19 @@
     <div class="col-6 shadow-lg p-3 mb-5 bg-white rounded"><br>
         <h2>Editar producto</h2> <br>
         <div class="input-group mb-3 justify-content-center">
-            <form th:action="@{/api/producto/update}" th:object="${producto}" method="post" enctype="multipart/form-data">
+            <form th:action="@{/producto/edit/{id}(id=${producto.id})}" th:object="${producto}" method="post" enctype="multipart/form-data">
                 <input type="hidden" th:field="*{id}">
                 <div class="input-group mb-3">
                     <div class="input-group-prepend">
                         <span class="input-group-text"><i class="fa fa-keyboard"></i> Nombre</span>
                     </div>
-                    <input type="text" placeholder="Nombre del producto" th:field="*{nombre}">
+                    <input type="text" placeholder="Nombre del producto" th:field="*{nombre}" class="form-control">
                 </div>
                 <div class="input-group mb-3">
                     <div class="input-group-prepend">
                         <span class="input-group-text"><i class="fa fa-dollar-sign"></i> Precio</span>
                     </div>
-                    <input type="number" min="0" th:field="*{precio}">
+                    <input type="number" min="0" th:field="*{precio}" class="form-control">
                 </div>
                 <!-- Campo para cargar imagen -->
                 <div class="input-group mb-3">
