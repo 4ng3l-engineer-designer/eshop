@@ -83,6 +83,18 @@
                             </div>
                             <input type="number" class="form-control" min="0" th:field="*{precio}">
                         </div>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa fa-box"></i> Stock</span>
+                            </div>
+                            <input type="number" class="form-control" min="0" th:field="*{stock}" placeholder="Cantidad en stock">
+                        </div>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa fa-info-circle"></i> Descripción</span>
+                            </div>
+                            <textarea class="form-control" rows="3" th:field="*{descripcion}" placeholder="Descripción del producto"></textarea>
+                        </div>
                         <!-- Campo para cargar imagen -->
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">

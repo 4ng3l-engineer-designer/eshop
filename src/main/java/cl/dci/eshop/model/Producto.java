@@ -9,22 +9,33 @@ public class Producto {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
+
     @Column
     private String nombre;
+
     @Column
     private int precio;
+
     @Column
-    private String imagenUrl;  // URL de la imagen del producto
+    private String imagenUrl;
+
+    @Column
+    private int stock; // Campo para la cantidad disponible en stock
+
+    @Column(length = 500)
+    private String descripcion; // Campo para la descripción del producto
 
     // Constructor por defecto
     public Producto() {
     }
 
     // Constructor con parámetros
-    public Producto(String nombre, int precio, String imagenUrl) {
+    public Producto(String nombre, int precio, String imagenUrl, int stock, String descripcion) {
         this.nombre = nombre;
         this.precio = precio;
         this.imagenUrl = imagenUrl;
+        this.stock = stock;
+        this.descripcion = descripcion;
     }
 
     // Getters y setters
@@ -60,6 +71,22 @@ public class Producto {
         this.imagenUrl = imagenUrl;
     }
 
+    public int getStock() {
+        return stock;
+    }
+
+    public void setStock(int stock) {
+        this.stock = stock;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
     @Override
     public String toString() {
         return "Producto{" +
@@ -67,6 +94,8 @@ public class Producto {
                 ", nombre='" + nombre + '\'' +
                 ", precio=" + precio +
                 ", imagenUrl='" + imagenUrl + '\'' +
+                ", stock=" + stock +
+                ", descripcion='" + descripcion + '\'' +
                 '}';
     }
 }

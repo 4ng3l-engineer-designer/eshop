@@ -46,11 +46,33 @@ public class ProductoController {
             attributes.addFlashAttribute("mensaje", "Producto guardado con éxito");
         } catch (Exception e) {
             attributes.addFlashAttribute("error", "Error al guardar el producto: " + e.getMessage());
-            e.printStackTrace();  // Agrega esta línea para imprimir el stack trace en el log
+            e.printStackTrace();
             return "redirect:/producto/new";
         }
         return "redirect:/admin/productos";
     }
+
+    @PostMapping("/edit/{id}")
+    public String updateProducto(@PathVariable Integer id, @ModelAttribute Producto producto, @RequestParam(value = "imagen", required = false) MultipartFile imagenFile, RedirectAttributes attributes) {
+        Producto existingProducto = productoRepository.findById(id).orElse(null);
+        if (existingProducto != null) {
+            existingProducto.setNombre(producto.getNombre());
+            existingProducto.setPrecio(producto.getPrecio());
+            existingProducto.setStock(producto.getStock()); // Actualizar stock
+            existingProducto.setDescripcion(producto.getDescripcion()); // Actualizar descripción
+            if (imagenFile != null && !imagenFile.isEmpty()) {
+                String imagePath = saveImage(imagenFile);
+                existingProducto.setImagenUrl(imagePath);
+            }
+            productoRepository.save(existingProducto);
+            attributes.addFlashAttribute("mensaje", "Producto actualizado con éxito");
+        } else {
+            attributes.addFlashAttribute("error", "Error: Producto no encontrado");
+            return "redirect:/producto/edit/form/{id}";
+        }
+        return "redirect:/admin/productos";
+    }
+
 
     @GetMapping("/edit/form/{id}")
     public String editProductoForm(@PathVariable Integer id, Model model) {
@@ -63,26 +85,6 @@ public class ProductoController {
         }
     }
 
-    @PostMapping("/edit/{id}")
-    public String updateProducto(@PathVariable Integer id, @ModelAttribute Producto producto, @RequestParam(value = "imagen", required = false) MultipartFile imagenFile, RedirectAttributes attributes) {
-        Producto existingProducto = productoRepository.findById(id).orElse(null);
-        if (existingProducto != null) {
-            existingProducto.setNombre(producto.getNombre());
-            existingProducto.setPrecio(producto.getPrecio());
-            if (imagenFile != null && !imagenFile.isEmpty()) {
-                String imagePath = saveImage(imagenFile);
-                existingProducto.setImagenUrl(imagePath);
-            } else if (existingProducto.getImagenUrl() != null) {
-                producto.setImagenUrl(existingProducto.getImagenUrl());
-            }
-            productoRepository.save(existingProducto);
-            attributes.addFlashAttribute("mensaje", "Producto actualizado con éxito");
-        } else {
-            attributes.addFlashAttribute("error", "Error: Producto no encontrado");
-            return "redirect:/producto/edit/form/{id}";
-        }
-        return "redirect:/admin/productos";
-    }
 
     @GetMapping("/productos")
     public String listProductos(Model model) {
