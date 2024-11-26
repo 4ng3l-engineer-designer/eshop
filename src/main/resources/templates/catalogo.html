@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org/">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments :: head"></head>
 
 <body>
@@ -7,26 +7,20 @@
 <!-- Navigation -->
 <nav th:replace="fragments :: navigation-shop"></nav>
 
-
 <!-- Page Content -->
 <div class="container">
-
     <div class="row">
-
         <div class="col-lg-3">
-
             <h1 class="my-4">Shop Name</h1>
             <div class="list-group">
                 <a href="#" class="list-group-item">Category 1</a>
                 <a href="#" class="list-group-item">Category 2</a>
                 <a href="#" class="list-group-item">Category 3</a>
             </div>
-
         </div>
         <!-- /.col-lg-3 -->
 
         <div class="col-lg-9">
-
             <div id="carouselExampleIndicators" class="carousel slide my-4" data-ride="carousel">
                 <ol class="carousel-indicators">
                     <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
@@ -50,42 +44,32 @@
                 </a>
                 <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="sr-only">Next</span>
+                    <span the="sr-only">Next</span>
                 </a>
             </div>
 
             <div class="row">
-
                 <div class="col-lg-4 col-md-6 mb-4" th:each="producto : ${productos}">
                     <div class="card h-100">
-                        <a th:href="@{'/producto/' + ${producto.id}}"><img class="card-img-top" src="http://placehold.it/700x400" alt=""></a>
+                        <a th:href="@{'/producto/' + ${producto.id}}"><img class="card-img-top" th:src="${producto.imagenUrl}" alt="Product Image" onerror="this.src='http://placehold.it/700x400';"></a>
                         <div class="card-body">
                             <h4 class="card-title">
                                 <a th:href="@{'/producto/' + ${producto.id}}" th:text="${producto.nombre}"></a>
                             </h4>
                             <h5>$<span th:text="${producto.precio}"></span></h5>
-                            <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet
-                                numquam
-                                aspernatur!</p>
+                            <p class="card-text" th:text="${producto.descripcion}"></p>
                         </div>
                         <div class="card-footer">
-                            <small class="text-muted">&#9733; &#9733; &#9733; &#9733; &#9734;</small>
+                            <small class="text-muted">Stock: <span th:text="${producto.stock}"></span></small>
                         </div>
                     </div>
                 </div>
-
-
-
-
             </div>
             <!-- /.row -->
-
         </div>
         <!-- /.col-lg-9 -->
-
     </div>
     <!-- /.row -->
-
 </div>
 <!-- /.container -->
 

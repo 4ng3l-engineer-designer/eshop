@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 import static cl.dci.eshop.security.ApplicationUserRole.*;
 
-
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -38,31 +37,24 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/", "index", "/css/*", "/js/*","/user","/catalogo","/producto/*","/home","/poblamiento","/api/**","/registro","/api/usuario/registrar").permitAll()
-                //.antMatchers("/api/**").hasRole(ADMIN.name())
-                .anyRequest()
-                .authenticated()
+                // Agregar /home y /catalogo a la lista de rutas permitidas
+                .antMatchers("/", "index", "/css/*", "/js/*", "/images/**", "/catalogo/**", "/home/**", "/producto/**").permitAll()
+                .anyRequest().authenticated()
                 .and()
                 .formLogin()
                 .loginPage("/login")
                 .permitAll()
                 .defaultSuccessUrl("/catalogo", true)
-                .passwordParameter("password")
-                .usernameParameter("username")
-                .and()
-                .rememberMe()
-                .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21))
-                .key("somethingverysecured")
-                .rememberMeParameter("remember-me")
                 .and()
                 .logout()
                 .logoutUrl("/logout")
-                .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET")) // https://docs.spring.io/spring-security/site/docs/4.2.12.RELEASE/apidocs/org/springframework/security/config/annotation/web/configurers/LogoutConfigurer.html
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
                 .clearAuthentication(true)
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID", "remember-me")
                 .logoutSuccessUrl("/login");
     }
+
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {

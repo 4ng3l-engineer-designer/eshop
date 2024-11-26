@@ -13,7 +13,8 @@
         <th>Nombre</th>
         <th>Precio</th>
         <th>Imagen</th>
-        <th>Acciones</th>
+        <th>Stock</th>
+        <th>Descripción</th>
     </tr>
     </thead>
     <tbody>
@@ -21,9 +22,8 @@
         <td th:text="${producto.nombre}"></td>
         <td th:text="${producto.precio}"></td>
         <td><img th:src="@{'/images/' + ${producto.imagenUrl}}" alt="Producto" width="80"></td>
-        <td>
-            <a th:href="@{/producto/edit/{id}(id=${producto.id})}">Editar</a>
-        </td>
+        <td th:text="${producto.stock}"></td>
+        <td th:text="${producto.descripcion}"></td>
     </tr>
     </tbody>
 </table>
