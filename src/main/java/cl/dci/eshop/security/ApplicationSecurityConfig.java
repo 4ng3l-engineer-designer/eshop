@@ -37,8 +37,7 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable()
                 .authorizeRequests()
-                // Agregar /home y /catalogo a la lista de rutas permitidas
-                .antMatchers("/", "index", "/css/*", "/js/*", "/images/**", "/catalogo/**", "/home/**", "/producto/**").permitAll()
+                .antMatchers("/", "index", "/css/*", "/js/*", "/images/**", "/catalogo/**", "/home/**", "/producto/**", "/registro", "/api/usuario/registrar").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
