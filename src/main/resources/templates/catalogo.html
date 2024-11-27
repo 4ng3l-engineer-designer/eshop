@@ -61,6 +61,9 @@
                         </div>
                         <div class="card-footer">
                             <small class="text-muted">Stock: <span th:text="${producto.stock}"></span></small>
+                            <form th:action="@{/api/carrito/crear/{id}(id=${producto.id})}" method="post">
+                                <button type="submit" class="btn btn-primary">Agregar al carrito</button>
+                            </form>
                         </div>
                     </div>
                 </div>

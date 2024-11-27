@@ -8,13 +8,12 @@ import cl.dci.eshop.repository.CarritoRepository;
 import cl.dci.eshop.repository.ProductoCarritoRepository;
 import cl.dci.eshop.repository.ProductoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashSet;
-import java.util.Set;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/api/carrito")
@@ -28,44 +27,49 @@ public class CarritoController {
     private ProductoCarritoRepository productoCarritoRepository;
 
     @PostMapping("/crear/{id}")
-    public String agregarProducto(@PathVariable int id){
-        System.out.println(id);
+    public String agregarProducto(@PathVariable int id, RedirectAttributes redirectAttributes) {
         Producto producto = productoRepository.findById(id).orElse(null);
+        if (producto == null) {
+            redirectAttributes.addFlashAttribute("error", "Producto no encontrado");
+            return "redirect:/catalogo";  // Cambia a la página adecuada si el producto no se encuentra
+        }
         Carrito carrito = getCurrentUser().getCarrito();
         carrito.addProducto(producto);
 
         ProductoCarrito pc = new ProductoCarrito(producto, carrito);
         productoCarritoRepository.save(pc);
         carritoRepository.save(carrito);
-        return "redirect:/carrito";
+
+        redirectAttributes.addFlashAttribute("mensaje", "Producto agregado al carrito");
+        return "redirect:/carrito";  // Redirecciona a la página de carrito
     }
 
+
     @PreAuthorize("hasAuthority('carrito:manage')")
-    @PostMapping(path = "{id}")
-    public String eliminarProducto(@PathVariable int id){
-
-        System.out.println(id);
-        Carrito carrito = getCurrentUser().getCarrito();
-
+    @PostMapping("/{id}")
+    public String eliminarProducto(@PathVariable int id, RedirectAttributes redirectAttributes) {
         ProductoCarrito pc = productoCarritoRepository.findById(id).orElse(null);
+        if (pc == null) {
+            redirectAttributes.addFlashAttribute("error", "Producto no encontrado en el carrito");
+            return "redirect:/carrito";  // Redirecciona de vuelta al carrito con mensaje de error
+        }
+        Carrito carrito = getCurrentUser().getCarrito();
         Producto producto = pc.getProducto();
 
         carrito.deleteProducto(producto);
-
         productoCarritoRepository.delete(pc);
         carritoRepository.save(carrito);
 
-        return "redirect:/carrito";
+        redirectAttributes.addFlashAttribute("mensaje", "Producto eliminado del carrito");
+        return "redirect:/carrito";  // Redirecciona de vuelta al carrito con mensaje de éxito
     }
+
 
     private User getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = null;
-
         if (principal instanceof User) {
-            user = ((User) principal);
+            return (User) principal;
         }
-        return user;
+        return null;
     }
-
 }
