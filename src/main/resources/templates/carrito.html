@@ -29,9 +29,17 @@
                         </div>
                         <div class="col-xs-4">
                             <h4 class="product-name"><strong th:text="${prodCarrito.producto.nombre}"></strong></h4>
+                            <h4><small class="text-muted">Stock: <span th:text="${prodCarrito.producto.stock}"></span></small></h4>
                             <h4><span class="badge badge-secondary" th:text="'$' + ${prodCarrito.producto.precio}"></span></h4>
                         </div>
                         <div class="col-xs-6">
+                            <form th:action="@{/api/carrito/incrementar/{id}(id=${prodCarrito.id})}" method="post">
+                                <button type="submit" class="btn btn-info">+</button>
+                            </form>
+                            <input type="text" value="${prodCarrito.cantidad}" readonly style="width: 40px; text-align: center;">
+                            <form th:action="@{/api/carrito/decrementar/{id}(id=${prodCarrito.id})}" method="post">
+                                <button type="submit" class="btn btn-warning">-</button>
+                            </form>
                             <form th:action="@{/api/carrito/{id}(id=${prodCarrito.id})}" method="post">
                                 <button type="submit" class="btn btn-danger">Quitar</button>
                             </form>

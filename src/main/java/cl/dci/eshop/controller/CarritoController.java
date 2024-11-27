@@ -72,4 +72,34 @@ public class CarritoController {
         }
         return null;
     }
+
+    @PostMapping("/incrementar/{id}")
+    public String incrementarProducto(@PathVariable int id, RedirectAttributes redirectAttributes) {
+        ProductoCarrito pc = productoCarritoRepository.findById(id).orElse(null);
+        if (pc == null) {
+            redirectAttributes.addFlashAttribute("error", "Producto no encontrado en el carrito");
+            return "redirect:/carrito";
+        }
+        pc.incrementarCantidad();
+        productoCarritoRepository.save(pc);
+        redirectAttributes.addFlashAttribute("mensaje", "Producto incrementado en el carrito");
+        return "redirect:/carrito";
+    }
+
+    @PostMapping("/decrementar/{id}")
+    public String decrementarProducto(@PathVariable int id, RedirectAttributes redirectAttributes) {
+        ProductoCarrito pc = productoCarritoRepository.findById(id).orElse(null);
+        if (pc == null) {
+            redirectAttributes.addFlashAttribute("error", "Producto no encontrado en el carrito");
+            return "redirect:/carrito";
+        }
+        if (pc.decrementarCantidad() == 0) {
+            productoCarritoRepository.delete(pc);
+            redirectAttributes.addFlashAttribute("mensaje", "Producto eliminado del carrito");
+        } else {
+            productoCarritoRepository.save(pc);
+            redirectAttributes.addFlashAttribute("mensaje", "Producto decrementado en el carrito");
+        }
+        return "redirect:/carrito";
+    }
 }
