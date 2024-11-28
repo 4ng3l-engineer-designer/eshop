@@ -36,7 +36,8 @@
                             <form th:action="@{/api/carrito/incrementar/{id}(id=${prodCarrito.id})}" method="post">
                                 <button type="submit" class="btn btn-info">+</button>
                             </form>
-                            <input type="text" value="${prodCarrito.cantidad}" readonly style="width: 40px; text-align: center;">
+                            <!-- Modificado el input para mejorar la visualización del contador -->
+                            <input type="number" value="${prodCarrito.cantidad}" readonly style="width: 60px; text-align: center;">
                             <form th:action="@{/api/carrito/decrementar/{id}(id=${prodCarrito.id})}" method="post">
                                 <button type="submit" class="btn btn-warning">-</button>
                             </form>
