@@ -33,15 +33,23 @@
                             <h4><span class="badge badge-secondary" th:text="'$' + ${prodCarrito.producto.precio}"></span></h4>
                         </div>
                         <div class="col-xs-6">
-                            <form th:action="@{/api/carrito/incrementar/{id}(id=${prodCarrito.id})}" method="post">
-                                <button type="submit" class="btn btn-info">+</button>
-                            </form>
-                            <!-- Modificado el input para mejorar la visualización del contador -->
-                            <input type="number" value="${prodCarrito.cantidad}" readonly style="width: 60px; text-align: center;">
-                            <form th:action="@{/api/carrito/decrementar/{id}(id=${prodCarrito.id})}" method="post">
-                                <button type="submit" class="btn btn-warning">-</button>
-                            </form>
-                            <form th:action="@{/api/carrito/{id}(id=${prodCarrito.id})}" method="post">
+                            <div class="input-group">
+                                <!-- Botón para incrementar la cantidad -->
+                                <form th:action="@{/api/carrito/incrementar/{id}(id=${prodCarrito.id})}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-info">+</button>
+                                </form>
+
+                                <!-- Campo de cantidad modificado -->
+                                <input id="cantidad-${prodCarrito.id}" type="text" th:value="${prodCarrito.cantidad}" min="1" readonly style="width: 60px; text-align: center; margin: 0 10px;">
+
+                                <!-- Botón para decrementar la cantidad -->
+                                <form th:action="@{/api/carrito/decrementar/{id}(id=${prodCarrito.id})}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-warning">-</button>
+                                </form>
+                            </div>
+
+                            <!-- Botón para quitar producto -->
+                            <form th:action="@{/api/carrito/{id}(id=${prodCarrito.id})}" method="post" style="display: inline;">
                                 <button type="submit" class="btn btn-danger">Quitar</button>
                             </form>
                         </div>

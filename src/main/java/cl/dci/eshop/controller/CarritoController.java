@@ -8,7 +8,6 @@ import cl.dci.eshop.repository.CarritoRepository;
 import cl.dci.eshop.repository.ProductoCarritoRepository;
 import cl.dci.eshop.repository.ProductoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -31,7 +30,7 @@ public class CarritoController {
         Producto producto = productoRepository.findById(id).orElse(null);
         if (producto == null) {
             redirectAttributes.addFlashAttribute("error", "Producto no encontrado");
-            return "redirect:/catalogo";  // Cambia a la página adecuada si el producto no se encuentra
+            return "redirect:/catalogo";
         }
         Carrito carrito = getCurrentUser().getCarrito();
         carrito.addProducto(producto);
@@ -41,9 +40,8 @@ public class CarritoController {
         carritoRepository.save(carrito);
 
         redirectAttributes.addFlashAttribute("mensaje", "Producto agregado al carrito");
-        return "redirect:/carrito";  // Redirecciona a la página de carrito
+        return "redirect:/carrito";
     }
-
 
     @PreAuthorize("hasAuthority('carrito:manage')")
     @PostMapping("/{id}")
@@ -51,7 +49,7 @@ public class CarritoController {
         ProductoCarrito pc = productoCarritoRepository.findById(id).orElse(null);
         if (pc == null) {
             redirectAttributes.addFlashAttribute("error", "Producto no encontrado en el carrito");
-            return "redirect:/carrito";  // Redirecciona de vuelta al carrito con mensaje de error
+            return "redirect:/carrito";
         }
         Carrito carrito = getCurrentUser().getCarrito();
         Producto producto = pc.getProducto();
@@ -61,9 +59,8 @@ public class CarritoController {
         carritoRepository.save(carrito);
 
         redirectAttributes.addFlashAttribute("mensaje", "Producto eliminado del carrito");
-        return "redirect:/carrito";  // Redirecciona de vuelta al carrito con mensaje de éxito
+        return "redirect:/carrito";
     }
-
 
     private User getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -83,6 +80,7 @@ public class CarritoController {
         pc.incrementarCantidad();
         productoCarritoRepository.save(pc);
         redirectAttributes.addFlashAttribute("mensaje", "Producto incrementado en el carrito");
+        System.out.println("Cantidad incrementada para producto ID " + id + ": " + pc.getCantidad());
         return "redirect:/carrito";
     }
 
@@ -93,12 +91,13 @@ public class CarritoController {
             redirectAttributes.addFlashAttribute("error", "Producto no encontrado en el carrito");
             return "redirect:/carrito";
         }
-        if (pc.decrementarCantidad() == 0) {
-            productoCarritoRepository.delete(pc);
-            redirectAttributes.addFlashAttribute("mensaje", "Producto eliminado del carrito");
-        } else {
+        if (pc.getCantidad() > 1) {
+            pc.decrementarCantidad();
             productoCarritoRepository.save(pc);
             redirectAttributes.addFlashAttribute("mensaje", "Producto decrementado en el carrito");
+            System.out.println("Cantidad decrementada para producto ID " + id + ": " + pc.getCantidad());
+        } else {
+            redirectAttributes.addFlashAttribute("error", "No se puede decrementar más la cantidad");
         }
         return "redirect:/carrito";
     }
