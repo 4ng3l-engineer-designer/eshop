@@ -33,15 +33,26 @@ public class CarritoController {
             return "redirect:/catalogo";
         }
         Carrito carrito = getCurrentUser().getCarrito();
-        carrito.addProducto(producto);
 
-        ProductoCarrito pc = new ProductoCarrito(producto, carrito);
-        productoCarritoRepository.save(pc);
-        carritoRepository.save(carrito);
+        // Verificar si el producto ya está en el carrito
+        ProductoCarrito productoCarritoExistente = productoCarritoRepository.findByCarritoAndProducto(carrito, producto);
+        if (productoCarritoExistente != null) {
+            // Si el producto ya está en el carrito, incrementar la cantidad
+            productoCarritoExistente.incrementarCantidad();
+            productoCarritoRepository.save(productoCarritoExistente);
+            redirectAttributes.addFlashAttribute("mensaje", "Cantidad de producto incrementada en el carrito");
+        } else {
+            // Si el producto no está en el carrito, agregarlo
+            ProductoCarrito pc = new ProductoCarrito(producto, carrito);
+            productoCarritoRepository.save(pc);
+            carrito.addProducto(producto);
+            carritoRepository.save(carrito);
+            redirectAttributes.addFlashAttribute("mensaje", "Producto agregado al carrito");
+        }
 
-        redirectAttributes.addFlashAttribute("mensaje", "Producto agregado al carrito");
         return "redirect:/carrito";
     }
+
 
     @PreAuthorize("hasAuthority('carrito:manage')")
     @PostMapping("/{id}")

@@ -1,11 +1,9 @@
 package cl.dci.eshop.model;
 
 import cl.dci.eshop.auth.User;
-
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-
 
 @Entity
 @Table(name = "carrito")
@@ -15,72 +13,32 @@ public class Carrito {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "carrito_id")
     private int id;
+
     @Column
     private int cantidadProductos;
+
     @Column
     private int precioTotal;
 
-    /*@JoinTable(name = "producto_carrito",
-            joinColumns = @JoinColumn(name = "carrito_id"),
-            inverseJoinColumns = @JoinColumn(name = "producto_id"))
-    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
-    private List<Producto> productos;*/
-
-    @OneToMany(mappedBy = "carrito")
+    // Relación OneToMany con ProductoCarrito
+    @OneToMany(mappedBy = "carrito", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ProductoCarrito> productoCarritos;
 
-
-    @OneToOne()
+    // Relación OneToOne con User
+    @OneToOne
     @JoinTable(name = "user_carrito",
             joinColumns = {@JoinColumn(name = "carrito_id")},
             inverseJoinColumns = {@JoinColumn(name = "user_id")})
     private User user;
 
+    // Constructor sin parámetros
     public Carrito() {
         this.cantidadProductos = 0;
         this.precioTotal = 0;
-        //this.productos = new ArrayList<>();
         this.productoCarritos = new ArrayList<>();
-
     }
 
-    public List<ProductoCarrito> getProductoCarritos() {
-        return productoCarritos;
-    }
-
-    public void setProductoCarritos(List<ProductoCarrito> productoCarritos) {
-        this.productoCarritos = productoCarritos;
-    }
-/*
-    public Carrito(ArrayList<Producto> productos) {
-        this.productos = productos;
-    }*/
-
-
-
-    public void addProducto(Producto producto){
-        this.precioTotal += producto.getPrecio();
-        this.cantidadProductos++;
-        //this.productos.add(producto);
-    }
-
-    public void deleteProducto(Producto producto){
-        this.precioTotal -= producto.getPrecio();
-        this.cantidadProductos--;
-    }
-/*
-    public void vaciarCarrito(){
-        this.productos.clear();
-    }*/
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
+    // Métodos Getter y Setter
     public int getId() {
         return id;
     }
@@ -104,14 +62,66 @@ public class Carrito {
     public void setPrecioTotal(int precioTotal) {
         this.precioTotal = precioTotal;
     }
-/*
-    public List<Producto> getProductos() {
-        return productos;
+
+    public List<ProductoCarrito> getProductoCarritos() {
+        return productoCarritos;
     }
 
-    public void setProductos(ArrayList<Producto> productos) {
-        this.productos = productos;
-    }*/
+    public void setProductoCarritos(List<ProductoCarrito> productoCarritos) {
+        this.productoCarritos = productoCarritos;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    // Método para agregar un producto al carrito
+    public void addProducto(Producto producto) {
+        ProductoCarrito pcExistente = null;
+
+        // Buscar si el producto ya existe en el carrito
+        for (ProductoCarrito pc : this.productoCarritos) {
+            if (pc.getProducto().equals(producto)) {
+                pcExistente = pc;
+                break;
+            }
+        }
+
+        if (pcExistente != null) {
+            // Si ya existe, incrementar la cantidad
+            pcExistente.incrementarCantidad();
+        } else {
+            // Si no existe, agregar un nuevo ProductoCarrito
+            ProductoCarrito pc = new ProductoCarrito(producto, this);
+            this.productoCarritos.add(pc);
+        }
+
+        // Actualizar los totales
+        this.precioTotal += producto.getPrecio();
+        this.cantidadProductos++;
+    }
+
+    // Método para eliminar un producto del carrito
+    public void deleteProducto(Producto producto) {
+        ProductoCarrito pcAEliminar = null;
+
+        for (ProductoCarrito pc : this.productoCarritos) {
+            if (pc.getProducto().equals(producto)) {
+                pcAEliminar = pc;
+                break;
+            }
+        }
+
+        if (pcAEliminar != null) {
+            this.productoCarritos.remove(pcAEliminar);
+            this.precioTotal -= producto.getPrecio();
+            this.cantidadProductos--;
+        }
+    }
 
     @Override
     public String toString() {
@@ -119,8 +129,6 @@ public class Carrito {
                 "id=" + id +
                 ", cantidadProductos=" + cantidadProductos +
                 ", precioTotal=" + precioTotal +
-                //", productos=" + productos +
-                //", user=" + user +
                 '}';
     }
 }

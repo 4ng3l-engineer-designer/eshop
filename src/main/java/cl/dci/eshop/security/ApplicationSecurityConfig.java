@@ -38,6 +38,7 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/", "index", "/css/*", "/js/*", "/images/**", "/catalogo/**", "/home/**", "/producto/**", "/registro", "/api/usuario/registrar").permitAll()
+                .antMatchers("/api/carrito/**").authenticated() // Asegúrate de que esta ruta esté accesible
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
@@ -53,6 +54,7 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .deleteCookies("JSESSIONID", "remember-me")
                 .logoutSuccessUrl("/login");
     }
+
 
 
     @Override
