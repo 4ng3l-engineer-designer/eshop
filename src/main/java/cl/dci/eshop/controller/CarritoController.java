@@ -136,7 +136,11 @@ public class CarritoController {
                 productoCarritoRepository.save(pc);
                 redirectAttributes.addFlashAttribute("mensaje", "Producto decrementado en el carrito");
             } else {
-                redirectAttributes.addFlashAttribute("error", "No se puede decrementar más la cantidad");
+                productoCarritoRepository.delete(pc);
+                Carrito carrito = getCurrentUser().getCarrito();
+                carrito.deleteProducto(pc.getProducto());
+                carritoRepository.save(carrito);
+                redirectAttributes.addFlashAttribute("mensaje", "Producto eliminado del carrito");
             }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Ha ocurrido un error al decrementar la cantidad del producto");
