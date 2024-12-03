@@ -47,9 +47,8 @@
                                     <button type="submit" class="btn btn-warning">-</button>
                                 </form>
                             </div>
-
                             <!-- Botón para quitar producto -->
-                            <form th:action="@{/api/carrito/{id}(id=${prodCarrito.id})}" method="post" style="display: inline;">
+                            <form th:action="@{/api/carrito/eliminar/{id}(id=${prodCarrito.id})}" method="post" style="display: inline;">
                                 <button type="submit" class="btn btn-danger">Quitar</button>
                             </form>
                         </div>
