@@ -30,6 +30,7 @@ public class CarritoController {
     @Autowired
     private ProductoCarritoRepository productoCarritoRepository;
 
+    // Agregar un producto al carrito
     @PostMapping("/crear/{id}")
     public String agregarProducto(@PathVariable int id, RedirectAttributes redirectAttributes) {
         try {
@@ -64,12 +65,18 @@ public class CarritoController {
                 LOGGER.info("Producto ya existente en el carrito, incrementando cantidad");
                 productoCarritoExistente.incrementarCantidad();
                 productoCarritoRepository.save(productoCarritoExistente);
+                carrito.setPrecioTotal(carrito.getPrecioTotal() + productoCarritoExistente.getProducto().getPrecio());
+                carrito.setCantidadProductos(carrito.getCantidadProductos() + 1);
+                carritoRepository.save(carrito);
                 redirectAttributes.addFlashAttribute("mensaje", "Cantidad de producto incrementada en el carrito");
             } else {
                 LOGGER.info("Agregando nuevo producto al carrito");
                 ProductoCarrito pc = new ProductoCarrito(producto, carrito);
                 productoCarritoRepository.save(pc);
-                carrito.addProducto(producto);
+                // Agregar el Producto (no ProductoCarrito) al carrito
+                carrito.addProducto(producto);  // Aquí cambiamos de pc a producto
+                carrito.setPrecioTotal(carrito.getPrecioTotal() + pc.getProducto().getPrecio());
+                carrito.setCantidadProductos(carrito.getCantidadProductos() + 1);
                 carritoRepository.save(carrito);
                 redirectAttributes.addFlashAttribute("mensaje", "Producto agregado al carrito");
             }
@@ -82,6 +89,7 @@ public class CarritoController {
         return "redirect:/carrito";
     }
 
+    // Eliminar un producto del carrito
     @PreAuthorize("hasAuthority('carrito:manage')")
     @PostMapping("/eliminar/{id}")
     public String eliminarProducto(@PathVariable int id, RedirectAttributes redirectAttributes) {
@@ -106,6 +114,9 @@ public class CarritoController {
             LOGGER.info("Eliminando producto del carrito: Producto ID {}", producto.getId());
 
             carrito.deleteProducto(producto);
+            carrito.setPrecioTotal(carrito.getPrecioTotal() - (producto.getPrecio() * pc.getCantidad()));
+            carrito.setCantidadProductos(carrito.getCantidadProductos() - pc.getCantidad());
+
             productoCarritoRepository.delete(pc);
             carritoRepository.save(carrito);
 
@@ -120,15 +131,7 @@ public class CarritoController {
         return "redirect:/carrito";
     }
 
-    private User getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof User) {
-            return (User) principal;
-        }
-        LOGGER.warn("Usuario actual no es una instancia de User");
-        return null;
-    }
-
+    // Incrementar cantidad del producto en el carrito
     @PostMapping("/incrementar/{id}")
     public String incrementarProducto(@PathVariable int id, RedirectAttributes redirectAttributes) {
         try {
@@ -141,8 +144,13 @@ public class CarritoController {
                 return "redirect:/carrito";
             }
 
+            Carrito carrito = pc.getCarrito();
             pc.incrementarCantidad();
+            carrito.setPrecioTotal(carrito.getPrecioTotal() + pc.getProducto().getPrecio());
+            carrito.setCantidadProductos(carrito.getCantidadProductos() + 1);
+
             productoCarritoRepository.save(pc);
+            carritoRepository.save(carrito);
 
             LOGGER.info("Cantidad incrementada exitosamente para ProductoCarrito ID {}", id);
             redirectAttributes.addFlashAttribute("mensaje", "Producto incrementado en el carrito");
@@ -154,6 +162,7 @@ public class CarritoController {
         return "redirect:/carrito";
     }
 
+    // Decrementar cantidad del producto en el carrito
     @PostMapping("/decrementar/{id}")
     public String decrementarProducto(@PathVariable int id, RedirectAttributes redirectAttributes) {
         try {
@@ -166,24 +175,39 @@ public class CarritoController {
                 return "redirect:/carrito";
             }
 
+            Carrito carrito = pc.getCarrito();
             if (pc.getCantidad() > 1) {
-                LOGGER.info("Decrementando cantidad del producto");
                 pc.decrementarCantidad();
-                productoCarritoRepository.save(pc);
-                redirectAttributes.addFlashAttribute("mensaje", "Producto decrementado en el carrito");
+                carrito.setPrecioTotal(carrito.getPrecioTotal() - pc.getProducto().getPrecio());
+                carrito.setCantidadProductos(carrito.getCantidadProductos() - 1);
             } else {
-                LOGGER.info("Cantidad del producto es 1, eliminando del carrito");
-                productoCarritoRepository.delete(pc);
-                Carrito carrito = pc.getCarrito();
+                // Eliminar producto si la cantidad es 1
                 carrito.deleteProducto(pc.getProducto());
-                carritoRepository.save(carrito);
-                redirectAttributes.addFlashAttribute("mensaje", "Producto eliminado del carrito");
+                carrito.setPrecioTotal(carrito.getPrecioTotal() - pc.getProducto().getPrecio());
+                carrito.setCantidadProductos(carrito.getCantidadProductos() - 1);
+                productoCarritoRepository.delete(pc);
             }
+
+            // Guardar cambios
+            productoCarritoRepository.save(pc);
+            carritoRepository.save(carrito);
+
+            LOGGER.info("Cantidad decrementada exitosamente para ProductoCarrito ID {}", id);
+            redirectAttributes.addFlashAttribute("mensaje", "Producto decrementado en el carrito");
         } catch (Exception e) {
             LOGGER.error("Error al decrementar la cantidad del producto: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error", "Ha ocurrido un error al decrementar la cantidad del producto");
             return "redirect:/carrito";
         }
         return "redirect:/carrito";
+    }
+
+    private User getCurrentUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof User) {
+            return (User) principal;
+        }
+        LOGGER.warn("Usuario actual no es una instancia de User");
+        return null;
     }
 }
