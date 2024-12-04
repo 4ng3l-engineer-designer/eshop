@@ -20,6 +20,10 @@
                     </div>
                 </div>
 
+                <!-- Mensajes de éxito y error -->
+                <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
                 <div class="panel-body">
                     <hr>
                     <div class="row" th:each="prodCarrito : ${prodCars}">
@@ -37,7 +41,7 @@
                                     <button type="submit" class="btn btn-info">+</button>
                                 </form>
 
-                                <input id="cantidad-${prodCarrito.id}" type="text" th:value="${prodCarrito.cantidad}" min="1" readonly style="width: 60px; text-align: center; margin: 0 10px;">
+                                <input type="text" th:value="${prodCarrito.cantidad}" min="1" readonly style="width: 60px; text-align: center; margin: 0 10px;">
 
                                 <form th:action="@{/api/carrito/decrementar/{id}(id=${prodCarrito.id})}" method="post" style="display: inline;">
                                     <button type="submit" class="btn btn-warning">-</button>
@@ -52,8 +56,8 @@
                     <div class="row">
                         <div class="text-center">
                             <div class="col-xs-9">
-                                <h4 class="text-right">Total <strong>$<span th:text="${carrito.precioTotal}"></span></strong></h4>
-                                <h6 class="text-right">Productos agregados: <span th:text="${carrito.cantidadProductos}"></span></h6>
+                                <h4 class="text-right">Total <strong>$<span th:text="${carrito != null ? carrito.precioTotal : 0}"></span></strong></h4>
+                                <h6 class="text-right">Productos agregados: <span th:text="${carrito != null ? carrito.cantidadProductos : 0}"></span></h6>
                             </div>
                         </div>
                     </div>
@@ -61,14 +65,17 @@
                 <div class="panel-footer">
                     <div class="row text-center">
                         <div class="col-xs-9">
-                            <button type="button" class="btn btn-success btn-block" th:if="${carrito != null && carrito.cantidadProductos > 0}">Checkout</button>
+                            <button type="button" class="btn btn-success btn-block" th:if="${carrito != null && carrito.cantidadProductos > 0}">
+                                Checkout
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div><br><br><br>
+</div>
+<br><br><br>
 <!-- Footer -->
 <footer th:replace="fragments :: footer"></footer>
 </body>

@@ -31,7 +31,6 @@ public class CarritoController {
     @Autowired
     private ProductoCarritoRepository productoCarritoRepository;
 
-    // Agregar un producto al carrito
     @PostMapping("/crear/{id}")
     public String agregarProducto(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
         try {
@@ -60,41 +59,36 @@ public class CarritoController {
                 currentUser.setCarrito(carrito);
             }
 
-            // Verificar si el producto ya está en el carrito
             ProductoCarrito productoCarritoExistente = productoCarritoRepository.findByCarritoAndProducto(carrito, producto);
             if (productoCarritoExistente != null) {
                 LOGGER.info("Producto ya existente en el carrito, incrementando cantidad");
                 productoCarritoExistente.incrementarCantidad();
                 productoCarritoRepository.save(productoCarritoExistente);
-                carrito.setPrecioTotal(carrito.getPrecioTotal() + productoCarritoExistente.getProducto().getPrecio());
-                carrito.setCantidadProductos(carrito.getCantidadProductos() + 1);
-                carritoRepository.save(carrito);
-                redirectAttributes.addFlashAttribute("mensaje", "Cantidad de producto incrementada en el carrito");
             } else {
                 LOGGER.info("Agregando nuevo producto al carrito");
                 ProductoCarrito pc = new ProductoCarrito(producto, carrito);
                 productoCarritoRepository.save(pc);
-                carrito.addProducto(producto);
-                carrito.setPrecioTotal(carrito.getPrecioTotal() + pc.getProducto().getPrecio());
-                carrito.setCantidadProductos(carrito.getCantidadProductos() + 1);
-                carritoRepository.save(carrito);
-                redirectAttributes.addFlashAttribute("mensaje", "Producto agregado al carrito");
             }
 
-            model.addAttribute("carrito", carrito);
-            model.addAttribute("prodCars", productoCarritoRepository.findByCarrito(carrito));
-            model.addAttribute("usuarioLogueado", getCurrentUser() != null);
+            // Actualizar totales
+            carrito.setPrecioTotal(carrito.getPrecioTotal() + producto.getPrecio());
+            carrito.setCantidadProductos(carrito.getCantidadProductos() + 1);
+            carrito = carritoRepository.save(carrito);
+
+            // Agregar atributos al redirect
+            redirectAttributes.addFlashAttribute("carrito", carrito);
+            redirectAttributes.addFlashAttribute("prodCars", productoCarritoRepository.findByCarrito(carrito));
+            redirectAttributes.addFlashAttribute("mensaje", "Producto agregado al carrito");
 
             return "redirect:/carrito";
+
         } catch (Exception e) {
             LOGGER.error("Error al agregar el producto al carrito: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error", "Ha ocurrido un error al agregar el producto al carrito");
             return "redirect:/carrito";
         }
-
     }
 
-    // Eliminar un producto del carrito
     @PreAuthorize("hasAuthority('carrito:manage')")
     @PostMapping("/eliminar/{id}")
     public String eliminarProducto(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
@@ -123,24 +117,21 @@ public class CarritoController {
             carrito.setCantidadProductos(carrito.getCantidadProductos() - pc.getCantidad());
 
             productoCarritoRepository.delete(pc);
-            carritoRepository.save(carrito);
+            carrito = carritoRepository.save(carrito);
 
             LOGGER.info("Producto eliminado exitosamente del carrito");
             redirectAttributes.addFlashAttribute("mensaje", "Producto eliminado del carrito");
+            redirectAttributes.addFlashAttribute("carrito", carrito);
+            redirectAttributes.addFlashAttribute("prodCars", productoCarritoRepository.findByCarrito(carrito));
 
-            model.addAttribute("carrito", carrito);
-            model.addAttribute("prodCars", productoCarritoRepository.findByCarrito(carrito));
-            model.addAttribute("usuarioLogueado", getCurrentUser() != null);
         } catch (Exception e) {
             LOGGER.error("Error al eliminar el producto del carrito: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error", "Ha ocurrido un error al eliminar el producto del carrito");
-            return "redirect:/carrito";
         }
 
-        return "carrito";
+        return "redirect:/carrito";
     }
 
-    // Incrementar cantidad del producto en el carrito
     @PostMapping("/incrementar/{id}")
     public String incrementarProducto(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
         try {
@@ -159,23 +150,20 @@ public class CarritoController {
             carrito.setCantidadProductos(carrito.getCantidadProductos() + 1);
 
             productoCarritoRepository.save(pc);
-            carritoRepository.save(carrito);
+            carrito = carritoRepository.save(carrito);
 
             LOGGER.info("Cantidad incrementada exitosamente para ProductoCarrito ID {}", id);
-            redirectAttributes.addFlashAttribute("mensaje", "Producto incrementado en el carrito");
+            redirectAttributes.addFlashAttribute("mensaje", "Cantidad incrementada");
+            redirectAttributes.addFlashAttribute("carrito", carrito);
+            redirectAttributes.addFlashAttribute("prodCars", productoCarritoRepository.findByCarrito(carrito));
 
-            model.addAttribute("carrito", carrito);
-            model.addAttribute("prodCars", productoCarritoRepository.findByCarrito(carrito));
-            model.addAttribute("usuarioLogueado", getCurrentUser() != null);
         } catch (Exception e) {
             LOGGER.error("Error al incrementar la cantidad del producto: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error", "Ha ocurrido un error al incrementar la cantidad del producto");
-            return "redirect:/carrito";
         }
-        return "carrito";
+        return "redirect:/carrito";
     }
 
-    // Decrementar cantidad del producto en el carrito
     @PostMapping("/decrementar/{id}")
     public String decrementarProducto(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
         try {
@@ -193,29 +181,26 @@ public class CarritoController {
                 pc.decrementarCantidad();
                 carrito.setPrecioTotal(carrito.getPrecioTotal() - pc.getProducto().getPrecio());
                 carrito.setCantidadProductos(carrito.getCantidadProductos() - 1);
+                productoCarritoRepository.save(pc);
             } else {
-                // Eliminar producto si la cantidad es 1
                 carrito.deleteProducto(pc.getProducto());
                 carrito.setPrecioTotal(carrito.getPrecioTotal() - pc.getProducto().getPrecio());
                 carrito.setCantidadProductos(carrito.getCantidadProductos() - 1);
                 productoCarritoRepository.delete(pc);
             }
 
-            productoCarritoRepository.save(pc);
-            carritoRepository.save(carrito);
+            carrito = carritoRepository.save(carrito);
 
             LOGGER.info("Cantidad decrementada exitosamente para ProductoCarrito ID {}", id);
-            redirectAttributes.addFlashAttribute("mensaje", "Producto decrementado en el carrito");
+            redirectAttributes.addFlashAttribute("mensaje", "Cantidad decrementada");
+            redirectAttributes.addFlashAttribute("carrito", carrito);
+            redirectAttributes.addFlashAttribute("prodCars", productoCarritoRepository.findByCarrito(carrito));
 
-            model.addAttribute("carrito", carrito);
-            model.addAttribute("prodCars", productoCarritoRepository.findByCarrito(carrito));
-            model.addAttribute("usuarioLogueado", getCurrentUser() != null);
         } catch (Exception e) {
             LOGGER.error("Error al decrementar la cantidad del producto: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error", "Ha ocurrido un error al decrementar la cantidad del producto");
-            return "redirect:/carrito";
         }
-        return "carrito";
+        return "redirect:/carrito";
     }
 
     private User getCurrentUser() {
