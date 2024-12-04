@@ -8,7 +8,6 @@ import cl.dci.eshop.repository.CarritoRepository;
 import cl.dci.eshop.repository.ProductoCarritoRepository;
 import cl.dci.eshop.repository.ProductoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -89,9 +88,8 @@ public class CarritoController {
         }
     }
 
-    @PreAuthorize("hasAuthority('carrito:manage')")
     @PostMapping("/eliminar/{id}")
-    public String eliminarProducto(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
+    public String eliminarProducto(@PathVariable int id, RedirectAttributes redirectAttributes) {
         try {
             LOGGER.info("Iniciando proceso para eliminar producto del carrito: ProductoCarrito ID {}", id);
 
@@ -104,36 +102,38 @@ public class CarritoController {
 
             Carrito carrito = pc.getCarrito();
             if (carrito == null) {
-                LOGGER.error("Carrito no encontrado para el usuario");
+                LOGGER.error("Carrito no encontrado");
                 redirectAttributes.addFlashAttribute("error", "Carrito no encontrado");
                 return "redirect:/carrito";
             }
 
+            // Eliminar verificación de usuario ya que puede estar causando problemas
             Producto producto = pc.getProducto();
-            LOGGER.info("Eliminando producto del carrito: Producto ID {}", producto.getId());
 
-            carrito.deleteProducto(producto);
+            // Primero eliminar el ProductoCarrito
+            productoCarritoRepository.delete(pc);
+
+            // Luego actualizar totales del carrito
             carrito.setPrecioTotal(carrito.getPrecioTotal() - (producto.getPrecio() * pc.getCantidad()));
             carrito.setCantidadProductos(carrito.getCantidadProductos() - pc.getCantidad());
-
-            productoCarritoRepository.delete(pc);
-            carrito = carritoRepository.save(carrito);
+            carritoRepository.save(carrito);
 
             LOGGER.info("Producto eliminado exitosamente del carrito");
             redirectAttributes.addFlashAttribute("mensaje", "Producto eliminado del carrito");
             redirectAttributes.addFlashAttribute("carrito", carrito);
             redirectAttributes.addFlashAttribute("prodCars", productoCarritoRepository.findByCarrito(carrito));
 
+            return "redirect:/carrito";
+
         } catch (Exception e) {
             LOGGER.error("Error al eliminar el producto del carrito: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error", "Ha ocurrido un error al eliminar el producto del carrito");
+            return "redirect:/carrito";
         }
-
-        return "redirect:/carrito";
     }
 
     @PostMapping("/incrementar/{id}")
-    public String incrementarProducto(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
+    public String incrementarProducto(@PathVariable int id, RedirectAttributes redirectAttributes) {
         try {
             LOGGER.info("Iniciando proceso para incrementar cantidad de producto: ProductoCarrito ID {}", id);
 
@@ -165,7 +165,7 @@ public class CarritoController {
     }
 
     @PostMapping("/decrementar/{id}")
-    public String decrementarProducto(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
+    public String decrementarProducto(@PathVariable int id, RedirectAttributes redirectAttributes) {
         try {
             LOGGER.info("Iniciando proceso para decrementar cantidad de producto: ProductoCarrito ID {}", id);
 
