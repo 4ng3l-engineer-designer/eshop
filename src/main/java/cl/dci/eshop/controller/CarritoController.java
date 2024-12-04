@@ -17,6 +17,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 @Controller
 @RequestMapping("/api/carrito")
 public class CarritoController {
@@ -31,7 +33,7 @@ public class CarritoController {
     private ProductoCarritoRepository productoCarritoRepository;
 
     @PostMapping("/crear/{id}")
-    public String agregarProducto(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
+    public String agregarProducto(@PathVariable int id, RedirectAttributes redirectAttributes) {
         try {
             LOGGER.info("Iniciando proceso para agregar producto al carrito: producto ID {}", id);
 
@@ -58,27 +60,22 @@ public class CarritoController {
                 currentUser.setCarrito(carrito);
             }
 
-            ProductoCarrito productoCarritoExistente = productoCarritoRepository.findByCarritoAndProducto(carrito, producto);
-            if (productoCarritoExistente != null) {
-                LOGGER.info("Producto ya existente en el carrito, incrementando cantidad");
-                productoCarritoExistente.incrementarCantidad();
-                productoCarritoRepository.save(productoCarritoExistente);
+            // Buscar si el producto ya está en el carrito
+            ProductoCarrito productoCarrito = productoCarritoRepository.findByCarritoAndProducto(carrito, producto);
+
+            if (productoCarrito == null) {
+                // Si no existe, crear nuevo ProductoCarrito
+                productoCarrito = new ProductoCarrito(producto, carrito);
+                productoCarrito = productoCarritoRepository.save(productoCarrito);
+                actualizarTotalesCarrito(carrito);
             } else {
-                LOGGER.info("Agregando nuevo producto al carrito");
-                ProductoCarrito pc = new ProductoCarrito(producto, carrito);
-                productoCarritoRepository.save(pc);
+                // Si existe, incrementar cantidad
+                productoCarrito.incrementarCantidad();
+                productoCarritoRepository.save(productoCarrito);
+                actualizarTotalesCarrito(carrito);
             }
 
-            // Actualizar totales
-            carrito.setPrecioTotal(carrito.getPrecioTotal() + producto.getPrecio());
-            carrito.setCantidadProductos(carrito.getCantidadProductos() + 1);
-            carrito = carritoRepository.save(carrito);
-
-            // Agregar atributos al redirect
-            redirectAttributes.addFlashAttribute("carrito", carrito);
-            redirectAttributes.addFlashAttribute("prodCars", productoCarritoRepository.findByCarrito(carrito));
             redirectAttributes.addFlashAttribute("mensaje", "Producto agregado al carrito");
-
             return "redirect:/carrito";
 
         } catch (Exception e) {
@@ -91,43 +88,18 @@ public class CarritoController {
     @PostMapping("/eliminar/{id}")
     public String eliminarProducto(@PathVariable int id, RedirectAttributes redirectAttributes) {
         try {
-            LOGGER.info("Iniciando proceso para eliminar producto del carrito: ProductoCarrito ID {}", id);
-
-            ProductoCarrito pc = productoCarritoRepository.findById(id).orElse(null);
-            if (pc == null) {
-                LOGGER.error("ProductoCarrito con ID {} no encontrado", id);
-                redirectAttributes.addFlashAttribute("error", "Producto no encontrado en el carrito");
-                return "redirect:/carrito";
-            }
+            ProductoCarrito pc = productoCarritoRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("ProductoCarrito no encontrado"));
 
             Carrito carrito = pc.getCarrito();
-            if (carrito == null) {
-                LOGGER.error("Carrito no encontrado");
-                redirectAttributes.addFlashAttribute("error", "Carrito no encontrado");
-                return "redirect:/carrito";
-            }
+            productoCarritoRepository.deleteById(id);
+            actualizarTotalesCarrito(carrito);
 
-            // Eliminar verificación de usuario ya que puede estar causando problemas
-            Producto producto = pc.getProducto();
-
-            // Primero eliminar el ProductoCarrito
-            productoCarritoRepository.delete(pc);
-
-            // Luego actualizar totales del carrito
-            carrito.setPrecioTotal(carrito.getPrecioTotal() - (producto.getPrecio() * pc.getCantidad()));
-            carrito.setCantidadProductos(carrito.getCantidadProductos() - pc.getCantidad());
-            carritoRepository.save(carrito);
-
-            LOGGER.info("Producto eliminado exitosamente del carrito");
             redirectAttributes.addFlashAttribute("mensaje", "Producto eliminado del carrito");
-            redirectAttributes.addFlashAttribute("carrito", carrito);
-            redirectAttributes.addFlashAttribute("prodCars", productoCarritoRepository.findByCarrito(carrito));
-
             return "redirect:/carrito";
-
         } catch (Exception e) {
-            LOGGER.error("Error al eliminar el producto del carrito: {}", e.getMessage(), e);
-            redirectAttributes.addFlashAttribute("error", "Ha ocurrido un error al eliminar el producto del carrito");
+            LOGGER.error("Error al eliminar producto: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error al eliminar el producto");
             return "redirect:/carrito";
         }
     }
@@ -210,5 +182,20 @@ public class CarritoController {
         }
         LOGGER.warn("Usuario actual no es una instancia de User");
         return null;
+    }
+
+    private void actualizarTotalesCarrito(Carrito carrito) {
+        List<ProductoCarrito> productos = productoCarritoRepository.findByCarrito(carrito);
+        int cantidadTotal = 0;
+        int precioTotal = 0;
+
+        for (ProductoCarrito pc : productos) {
+            cantidadTotal += pc.getCantidad();
+            precioTotal += pc.getProducto().getPrecio() * pc.getCantidad();
+        }
+
+        carrito.setCantidadProductos(cantidadTotal);
+        carrito.setPrecioTotal(precioTotal);
+        carritoRepository.save(carrito);
     }
 }
