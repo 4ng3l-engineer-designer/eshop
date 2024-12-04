@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -73,13 +74,13 @@ public class CarritoController {
                 LOGGER.info("Agregando nuevo producto al carrito");
                 ProductoCarrito pc = new ProductoCarrito(producto, carrito);
                 productoCarritoRepository.save(pc);
-                // Agregar el Producto (no ProductoCarrito) al carrito
-                carrito.addProducto(producto);  // Aquí cambiamos de pc a producto
+                carrito.addProducto(producto);
                 carrito.setPrecioTotal(carrito.getPrecioTotal() + pc.getProducto().getPrecio());
                 carrito.setCantidadProductos(carrito.getCantidadProductos() + 1);
                 carritoRepository.save(carrito);
                 redirectAttributes.addFlashAttribute("mensaje", "Producto agregado al carrito");
             }
+            redirectAttributes.addFlashAttribute("carrito", carrito);
         } catch (Exception e) {
             LOGGER.error("Error al agregar el producto al carrito: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error", "Ha ocurrido un error al agregar el producto al carrito");
@@ -122,6 +123,7 @@ public class CarritoController {
 
             LOGGER.info("Producto eliminado exitosamente del carrito");
             redirectAttributes.addFlashAttribute("mensaje", "Producto eliminado del carrito");
+            redirectAttributes.addFlashAttribute("carrito", carrito);
         } catch (Exception e) {
             LOGGER.error("Error al eliminar el producto del carrito: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error", "Ha ocurrido un error al eliminar el producto del carrito");
@@ -132,8 +134,9 @@ public class CarritoController {
     }
 
     // Incrementar cantidad del producto en el carrito
+    // Incrementar cantidad del producto en el carrito
     @PostMapping("/incrementar/{id}")
-    public String incrementarProducto(@PathVariable int id, RedirectAttributes redirectAttributes) {
+    public String incrementarProducto(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
         try {
             LOGGER.info("Iniciando proceso para incrementar cantidad de producto: ProductoCarrito ID {}", id);
 
@@ -154,17 +157,21 @@ public class CarritoController {
 
             LOGGER.info("Cantidad incrementada exitosamente para ProductoCarrito ID {}", id);
             redirectAttributes.addFlashAttribute("mensaje", "Producto incrementado en el carrito");
+
+            model.addAttribute("carrito", carrito);
+            model.addAttribute("prodCars", productoCarritoRepository.findByCarrito(carrito));
+            model.addAttribute("usuarioLogueado", getCurrentUser() != null); // Agregar este atributo al modelo
         } catch (Exception e) {
             LOGGER.error("Error al incrementar la cantidad del producto: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error", "Ha ocurrido un error al incrementar la cantidad del producto");
             return "redirect:/carrito";
         }
-        return "redirect:/carrito";
+        return "carrito";
     }
 
     // Decrementar cantidad del producto en el carrito
     @PostMapping("/decrementar/{id}")
-    public String decrementarProducto(@PathVariable int id, RedirectAttributes redirectAttributes) {
+    public String decrementarProducto(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
         try {
             LOGGER.info("Iniciando proceso para decrementar cantidad de producto: ProductoCarrito ID {}", id);
 
@@ -188,18 +195,21 @@ public class CarritoController {
                 productoCarritoRepository.delete(pc);
             }
 
-            // Guardar cambios
             productoCarritoRepository.save(pc);
             carritoRepository.save(carrito);
 
             LOGGER.info("Cantidad decrementada exitosamente para ProductoCarrito ID {}", id);
             redirectAttributes.addFlashAttribute("mensaje", "Producto decrementado en el carrito");
+
+            model.addAttribute("carrito", carrito);
+            model.addAttribute("prodCars", productoCarritoRepository.findByCarrito(carrito));
+            model.addAttribute("usuarioLogueado", getCurrentUser() != null); // Agregar este atributo al modelo
         } catch (Exception e) {
             LOGGER.error("Error al decrementar la cantidad del producto: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error", "Ha ocurrido un error al decrementar la cantidad del producto");
             return "redirect:/carrito";
         }
-        return "redirect:/carrito";
+        return "carrito";
     }
 
     private User getCurrentUser() {

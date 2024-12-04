@@ -23,7 +23,6 @@
                 <div class="panel-body">
                     <hr>
                     <div class="row" th:each="prodCarrito : ${prodCars}">
-                        <!-- Modificado para agregar la imagen con tamaño fijo -->
                         <div class="col-xs-2">
                             <img class="img-responsive" th:src="@{${prodCarrito.producto.imagenUrl}}" alt="Product Image" style="width: 100px; height: 70px;">
                         </div>
@@ -34,20 +33,16 @@
                         </div>
                         <div class="col-xs-6">
                             <div class="input-group">
-                                <!-- Botón para incrementar la cantidad -->
                                 <form th:action="@{/api/carrito/incrementar/{id}(id=${prodCarrito.id})}" method="post" style="display: inline;">
                                     <button type="submit" class="btn btn-info">+</button>
                                 </form>
 
-                                <!-- Campo de cantidad modificado -->
                                 <input id="cantidad-${prodCarrito.id}" type="text" th:value="${prodCarrito.cantidad}" min="1" readonly style="width: 60px; text-align: center; margin: 0 10px;">
 
-                                <!-- Botón para decrementar la cantidad -->
                                 <form th:action="@{/api/carrito/decrementar/{id}(id=${prodCarrito.id})}" method="post" style="display: inline;">
                                     <button type="submit" class="btn btn-warning">-</button>
                                 </form>
                             </div>
-                            <!-- Botón para quitar producto -->
                             <form th:action="@{/api/carrito/eliminar/{id}(id=${prodCarrito.id})}" method="post" style="display: inline;">
                                 <button type="submit" class="btn btn-danger">Quitar</button>
                             </form>
@@ -57,8 +52,8 @@
                     <div class="row">
                         <div class="text-center">
                             <div class="col-xs-9">
-                                <h6 class="text-right">Productos agregados: <span th:text="${carrito.cantidadProductos}"></span></h6>
                                 <h4 class="text-right">Total <strong>$<span th:text="${carrito.precioTotal}"></span></strong></h4>
+                                <h6 class="text-right">Productos agregados: <span th:text="${carrito.cantidadProductos}"></span></h6>
                             </div>
                         </div>
                     </div>
@@ -66,7 +61,7 @@
                 <div class="panel-footer">
                     <div class="row text-center">
                         <div class="col-xs-9">
-                            <button type="button" class="btn btn-success btn-block" th:if="${carrito.cantidadProductos} > 0">Checkout</button>
+                            <button type="button" class="btn btn-success btn-block" th:if="${carrito != null && carrito.cantidadProductos > 0}">Checkout</button>
                         </div>
                     </div>
                 </div>
