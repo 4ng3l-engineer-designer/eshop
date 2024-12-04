@@ -33,7 +33,7 @@ public class CarritoController {
 
     // Agregar un producto al carrito
     @PostMapping("/crear/{id}")
-    public String agregarProducto(@PathVariable int id, RedirectAttributes redirectAttributes) {
+    public String agregarProducto(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
         try {
             LOGGER.info("Iniciando proceso para agregar producto al carrito: producto ID {}", id);
 
@@ -80,20 +80,24 @@ public class CarritoController {
                 carritoRepository.save(carrito);
                 redirectAttributes.addFlashAttribute("mensaje", "Producto agregado al carrito");
             }
-            redirectAttributes.addFlashAttribute("carrito", carrito);
+
+            model.addAttribute("carrito", carrito);
+            model.addAttribute("prodCars", productoCarritoRepository.findByCarrito(carrito));
+            model.addAttribute("usuarioLogueado", getCurrentUser() != null);
+
+            return "redirect:/carrito";
         } catch (Exception e) {
             LOGGER.error("Error al agregar el producto al carrito: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error", "Ha ocurrido un error al agregar el producto al carrito");
             return "redirect:/carrito";
         }
 
-        return "redirect:/carrito";
     }
 
     // Eliminar un producto del carrito
     @PreAuthorize("hasAuthority('carrito:manage')")
     @PostMapping("/eliminar/{id}")
-    public String eliminarProducto(@PathVariable int id, RedirectAttributes redirectAttributes) {
+    public String eliminarProducto(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
         try {
             LOGGER.info("Iniciando proceso para eliminar producto del carrito: ProductoCarrito ID {}", id);
 
@@ -123,17 +127,19 @@ public class CarritoController {
 
             LOGGER.info("Producto eliminado exitosamente del carrito");
             redirectAttributes.addFlashAttribute("mensaje", "Producto eliminado del carrito");
-            redirectAttributes.addFlashAttribute("carrito", carrito);
+
+            model.addAttribute("carrito", carrito);
+            model.addAttribute("prodCars", productoCarritoRepository.findByCarrito(carrito));
+            model.addAttribute("usuarioLogueado", getCurrentUser() != null);
         } catch (Exception e) {
             LOGGER.error("Error al eliminar el producto del carrito: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error", "Ha ocurrido un error al eliminar el producto del carrito");
             return "redirect:/carrito";
         }
 
-        return "redirect:/carrito";
+        return "carrito";
     }
 
-    // Incrementar cantidad del producto en el carrito
     // Incrementar cantidad del producto en el carrito
     @PostMapping("/incrementar/{id}")
     public String incrementarProducto(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
@@ -160,7 +166,7 @@ public class CarritoController {
 
             model.addAttribute("carrito", carrito);
             model.addAttribute("prodCars", productoCarritoRepository.findByCarrito(carrito));
-            model.addAttribute("usuarioLogueado", getCurrentUser() != null); // Agregar este atributo al modelo
+            model.addAttribute("usuarioLogueado", getCurrentUser() != null);
         } catch (Exception e) {
             LOGGER.error("Error al incrementar la cantidad del producto: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error", "Ha ocurrido un error al incrementar la cantidad del producto");
@@ -203,7 +209,7 @@ public class CarritoController {
 
             model.addAttribute("carrito", carrito);
             model.addAttribute("prodCars", productoCarritoRepository.findByCarrito(carrito));
-            model.addAttribute("usuarioLogueado", getCurrentUser() != null); // Agregar este atributo al modelo
+            model.addAttribute("usuarioLogueado", getCurrentUser() != null);
         } catch (Exception e) {
             LOGGER.error("Error al decrementar la cantidad del producto: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error", "Ha ocurrido un error al decrementar la cantidad del producto");
