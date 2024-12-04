@@ -118,22 +118,20 @@ public class CarritoController {
 
             Carrito carrito = pc.getCarrito();
             pc.incrementarCantidad();
-            carrito.setPrecioTotal(carrito.getPrecioTotal() + pc.getProducto().getPrecio());
-            carrito.setCantidadProductos(carrito.getCantidadProductos() + 1);
-
             productoCarritoRepository.save(pc);
-            carrito = carritoRepository.save(carrito);
+
+            actualizarTotalesCarrito(carrito);
 
             LOGGER.info("Cantidad incrementada exitosamente para ProductoCarrito ID {}", id);
             redirectAttributes.addFlashAttribute("mensaje", "Cantidad incrementada");
-            redirectAttributes.addFlashAttribute("carrito", carrito);
-            redirectAttributes.addFlashAttribute("prodCars", productoCarritoRepository.findByCarrito(carrito));
+
+            return "redirect:/carrito";
 
         } catch (Exception e) {
             LOGGER.error("Error al incrementar la cantidad del producto: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error", "Ha ocurrido un error al incrementar la cantidad del producto");
+            return "redirect:/carrito";
         }
-        return "redirect:/carrito";
     }
 
     @PostMapping("/decrementar/{id}")
@@ -151,28 +149,23 @@ public class CarritoController {
             Carrito carrito = pc.getCarrito();
             if (pc.getCantidad() > 1) {
                 pc.decrementarCantidad();
-                carrito.setPrecioTotal(carrito.getPrecioTotal() - pc.getProducto().getPrecio());
-                carrito.setCantidadProductos(carrito.getCantidadProductos() - 1);
                 productoCarritoRepository.save(pc);
             } else {
-                carrito.deleteProducto(pc.getProducto());
-                carrito.setPrecioTotal(carrito.getPrecioTotal() - pc.getProducto().getPrecio());
-                carrito.setCantidadProductos(carrito.getCantidadProductos() - 1);
                 productoCarritoRepository.delete(pc);
             }
 
-            carrito = carritoRepository.save(carrito);
+            actualizarTotalesCarrito(carrito);
 
             LOGGER.info("Cantidad decrementada exitosamente para ProductoCarrito ID {}", id);
             redirectAttributes.addFlashAttribute("mensaje", "Cantidad decrementada");
-            redirectAttributes.addFlashAttribute("carrito", carrito);
-            redirectAttributes.addFlashAttribute("prodCars", productoCarritoRepository.findByCarrito(carrito));
+
+            return "redirect:/carrito";
 
         } catch (Exception e) {
             LOGGER.error("Error al decrementar la cantidad del producto: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error", "Ha ocurrido un error al decrementar la cantidad del producto");
+            return "redirect:/carrito";
         }
-        return "redirect:/carrito";
     }
 
     private User getCurrentUser() {
