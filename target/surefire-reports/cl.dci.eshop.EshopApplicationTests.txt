@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: cl.dci.eshop.EshopApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.925 s - in cl.dci.eshop.EshopApplicationTests

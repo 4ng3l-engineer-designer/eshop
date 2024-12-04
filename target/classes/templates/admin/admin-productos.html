@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments :: head"></head>
+<body>
+<!-- Navigation -->
+<nav th:replace="fragments :: navigation-shop"></nav>
+<nav th:replace="fragments :: navigation-admin"></nav>
+
+<div class="container">
+    <h2>Administración de productos</h2>
+    <br>
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" data-toggle="tab" href="#home">Lista de productos</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#menu1">Crear nuevo producto</a>
+        </li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <!-- Tab para listar productos -->
+        <div id="home" class="container tab-pane active"><br>
+            <div class="row">
+                <div class="col-2"></div>
+                <div class="col-8 shadow-lg p-3 mb-5 bg-white rounded">
+                    <div class="container">
+                        <h2>Lista de productos</h2>
+                        <table class="table table-dark table-hover">
+                            <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Precio</th>
+                                <th>Imagen</th>
+                                <th>Stock</th>
+                                <th>Descripción</th>
+                                <th>Opciones</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="producto : ${productos}">
+                                <td th:text="${producto.nombre}"></td>
+                                <td th:text="'$'+${producto.precio}"></td>
+                                <td><img th:src="${producto.imagenUrl}" alt="Producto" width="80"></td>
+                                <td th:text="${producto.stock}"></td>
+                                <td th:text="${producto.descripcion}"></td>
+                                <td>
+                                    <a th:href="@{/producto/edit/form/{id}(id=${producto.id})}" class="btn btn-warning">
+                                        <i class="fa fa-edit"></i>
+                                    </a>
+                                    <form th:action="@{/producto/delete/{id}(id=${producto.id})}" method="post"
+                                          onsubmit="return confirm('¿Estás seguro que quieres borrar este producto?');">
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="fa fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-2"></div>
+            </div>
+        </div>
+
+        <!-- Tab para crear nuevo producto -->
+        <div id="menu1" class="container tab-pane fade"><br>
+            <div class="row">
+                <div class="col-3"></div>
+                <div class="col-6 shadow-lg p-3 mb-5 bg-white rounded"><br>
+                    <h2>Crear nuevo producto</h2> <br>
+                    <form th:action="@{/producto/save}" th:object="${producto}" method="post" enctype="multipart/form-data">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa fa-keyboard"></i> Nombre</span>
+                            </div>
+                            <input type="text" class="form-control" placeholder="Nombre del producto" th:field="*{nombre}">
+                        </div>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa fa-dollar-sign"></i> Precio</span>
+                            </div>
+                            <input type="number" class="form-control" min="0" th:field="*{precio}">
+                        </div>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa fa-box"></i> Stock</span>
+                            </div>
+                            <input type="number" class="form-control" min="0" th:field="*{stock}" placeholder="Cantidad en stock">
+                        </div>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa fa-info-circle"></i> Descripción</span>
+                            </div>
+                            <textarea class="form-control" rows="3" th:field="*{descripcion}" placeholder="Descripción del producto"></textarea>
+                        </div>
+                        <!-- Campo para cargar imagen -->
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span the="input-group-text">Imagen del Producto</span>
+                            </div>
+                            <input type="file" class="form-control" name="imagen">
+                        </div>
+                        <button type="submit" class="btn btn-success">Agregar nuevo producto</button>
+                    </form>
+                </div>
+                <div class="col-3"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer th:replace="fragments :: footer"></footer>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments :: head"></head>
+<body>
+<!-- Navigation -->
+<nav th:replace="fragments :: navigation-shop"></nav>
+<br><br><br>
+
+<div class="container">
+    <!-- Mensajes de éxito y error -->
+    <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <div class="row">
+        <div class="col-xs-8">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <div class="panel-title">
+                        <div class="row">
+                            <div class="col-xs-6">
+                                <h5><i class="fa fa-shopping-cart"></i> Carrito de compra</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-body">
+                    <hr>
+                    <div class="row" th:each="prodCarrito : ${prodCars}">
+                        <div class="col-xs-2">
+                            <img class="img-responsive" th:src="@{${prodCarrito.producto.imagenUrl}}" alt="Product Image" style="width: 100px; height: 70px;">
+                        </div>
+                        <div class="col-xs-4">
+                            <h4 class="product-name"><strong th:text="${prodCarrito.producto.nombre}"></strong></h4>
+                            <h4><small class="text-muted">Stock: <span th:text="${prodCarrito.producto.stock}"></span></small></h4>
+                            <h4><span class="badge badge-secondary" th:text="'$' + ${prodCarrito.producto.precio}"></span></h4>
+                        </div>
+                        <div class="col-xs-6">
+                            <div class="input-group">
+                                <form th:action="@{/api/carrito/incrementar/{id}(id=${prodCarrito.id})}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-info">+</button>
+                                </form>
+
+                                <input type="text" th:id="'cantidad-' + ${prodCarrito.id}" th:value="${prodCarrito.cantidad}" min="1" readonly style="width: 60px; text-align: center; margin: 0 10px;">
+
+                                <form th:action="@{/api/carrito/decrementar/{id}(id=${prodCarrito.id})}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-warning">-</button>
+                                </form>
+                            </div>
+                            <form th:action="@{/api/carrito/eliminar/{id}(id=${prodCarrito.id})}" method="post" style="display: inline;">
+                                <button type="submit" class="btn btn-danger">Quitar</button>
+                            </form>
+                        </div>
+                    </div>
+                    <hr>
+                    <!-- Cálculo de totales -->
+                    <div class="row">
+                        <div class="text-center">
+                            <div class="col-xs-9">
+                                <h4 class="text-right">Total $<strong th:with="total=${#lists.isEmpty(prodCars) ? 0 : #aggregates.sum(prodCars.![producto.precio * cantidad])}"
+                                                                      th:text="${total}"></strong></h4>
+                                <h6 class="text-right">Productos agregados: <strong th:with="totalProds=${#lists.isEmpty(prodCars) ? 0 : #aggregates.sum(prodCars.![cantidad])}"
+                                                                                    th:text="${totalProds}"></strong></h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="row text-center">
+                        <div class="col-xs-9">
+                            <button type="button" class="btn btn-success btn-block"
+                                    th:if="${not #lists.isEmpty(prodCars)}">
+                                Checkout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br><br><br>
+<!-- Footer -->
+<footer th:replace="fragments :: footer"></footer>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org/">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar producto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
+</head>
+<body>
+<br><br>
+<div class="row">
+    <div class="col-3"></div>
+    <div class="col-6 shadow-lg p-3 mb-5 bg-white rounded"><br>
+        <h2>Editar producto</h2> <br>
+        <div class="input-group mb-3 justify-content-center">
+            <form th:action="@{/producto/edit/{id}(id=${producto.id})}" th:object="${producto}" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:field="*{id}">
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fa fa-keyboard"></i> Nombre</span>
+                    </div>
+                    <input type="text" placeholder="Nombre del producto" th:field="*{nombre}" class="form-control">
+                </div>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fa fa-dollar-sign"></i> Precio</span>
+                    </div>
+                    <input type="number" min="0" th:field="*{precio}" class="form-control">
+                </div>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fa fa-box"></i> Stock</span>
+                    </div>
+                    <input type="number" class="form-control" min="0" th:field="*{stock}" placeholder="Cantidad en stock">
+                </div>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fa fa-info-circle"></i> Descripción</span>
+                    </div>
+                    <textarea class="form-control" rows="3" th:field="*{descripcion}" placeholder="Descripción del producto"></textarea>
+                </div>
+                <!-- Campo para cargar imagen -->
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Imagen del Producto</span>
+                    </div>
+                    <input type="file" class="form-control" name="imagen">
+                </div>
+                <button type="submit" class="btn btn-success">Editar producto</button>
+            </form>
+        </div>
+        <br>
+    </div>
+    <div class="col-3"></div>
+</div>
+</body>
+</html>
